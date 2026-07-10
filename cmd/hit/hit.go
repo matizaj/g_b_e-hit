@@ -44,7 +44,7 @@ func run(env *env) error {
           fmt.Fprintf(env.stdout, "\nerror occured: %v\n", err)
           return err
      }
-     fmt.Printf("%s\n\nSending %d requests to %q (concurrency: %d)\n",logo, c.n, c.url, c.c)
+     fmt.Fprintf(env.stdout, "%s\n\nSending %d requests to %q (concurrency: %d), test mode: %v\n",logo, c.n, c.url, c.c, c.dry)
      return  nil
 }
 
