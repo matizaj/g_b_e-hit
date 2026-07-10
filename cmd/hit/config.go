@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"strconv"
+	"io"
 )
 
 type parseFunc func(string) error
@@ -14,7 +15,9 @@ type config struct {
 	n int
 	c int 
 	rps int
+	dry bool
 }
+
 
 func asPositiveIntValue(p *int) *positiveIntValue {
 	return (*positiveIntValue)(p)
@@ -38,7 +41,7 @@ func (n *positiveIntValue) Set(s string) error {
 	return nil
 }
 
-func parseArgs(c *config, args []string) error {
+func parseArgs(c *config, args []string, stderr io.Writer) error {
 	// flagSet := map[string]parseFunc {
 	// 	"url": stringVar(&c.url),
 	// 	"n": intVar(&c.n),
@@ -47,6 +50,7 @@ func parseArgs(c *config, args []string) error {
 	// }
 
 	fs := flag.NewFlagSet("hit", flag.ContinueOnError)
+	fs.SetOutput(stderr)
 	fs.Usage = func() {
 		fmt.Fprintf(fs.Output(), "usage %s [options] url\n", fs.Name())
 		fs.PrintDefaults()
@@ -55,6 +59,7 @@ func parseArgs(c *config, args []string) error {
 	fs.Var(asPositiveIntValue(&c.c), "c", "Concurrency level")
 	fs.Var(asPositiveIntValue(&c.rps), "r", "requests per second")
 	fs.Var(asPositiveIntValue(&c.n), "n", "number of requests")
+	fs.BoolVar(&c.dry, "dry", false, "dry run")
 
 	if err:=fs.Parse(args); err != nil {
 		return  err
@@ -75,8 +80,7 @@ func parseArgs(c *config, args []string) error {
 	// 		return fmt.Errorf("invalid value %q for flag -%s: %w",val, name, err) 
 	// 	}
 	// }
-	// return nil
-	return fs.Parse(args)
+	return nil
 }
 
 func stringVar(p *string) parseFunc {
