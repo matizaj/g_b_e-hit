@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strconv"
 	"io"
+	"net/url"
 )
 
 type parseFunc func(string) error
@@ -80,6 +81,11 @@ func parseArgs(c *config, args []string, stderr io.Writer) error {
 	// 		return fmt.Errorf("invalid value %q for flag -%s: %w",val, name, err) 
 	// 	}
 	// }
+	if err := validateArgs(c); err != nil {  
+        fmt.Fprintln(fs.Output(), err) 
+        fs.Usage() 
+        return err
+    }
 	return nil
 }
 
@@ -96,4 +102,20 @@ func intVar(v *int) parseFunc {
 		*v, err = strconv.Atoi(i)
 		return err
 	}
+}
+
+func validateArgs(c *config) error {
+    u, err := url.Parse(c.url)
+    if err != nil {
+        return fmt.Errorf("invalid value %q for url: %w", c.url, err)
+    }
+    if c.url == "" || u.Host == "" || u.Scheme == "" {
+        return fmt.Errorf(
+            "invalid value %q for url: requires a valid url", c.url,
+        )
+    }
+    if c.n < c.c {
+        return fmt.Errorf("invalid value %d for flag -n: should be greater than flag -c:%d", c.n, c.c)
+    }
+    return nil
 }

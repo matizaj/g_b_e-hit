@@ -23,7 +23,7 @@ func testRun(args ...string)(*testEnv, error) {
 
 func TestRunValidInput(t *testing.T){
 	t.Parallel()
-	tenv, err := testRun("www.test1.go")
+	tenv, err := testRun("http://www.test1.go")
 	if err != nil {
 		t.Fatalf("got %q\nwant nil err", err)
 	}
@@ -35,14 +35,14 @@ func TestRunValidInput(t *testing.T){
 	}
 }
 
-// func TestRunInvalidInput(t *testing.T) {
-// 	t.Parallel()
+func TestRunInvalidInput(t *testing.T) {
+	t.Parallel()
 
-// 	tenv, err := testRun("-c=2", "-n=1", "invalid-url")
-// 	if err == nil {
-// 		t.Fatalf("got nil; want err")
-// 	}
-// 	if n := tenv.stderr.Len(); n == 0 {  #1
-//         t.Error("stderr = 0 bytes; want >0")
-//     }
-// }
+	tenv, err := testRun("-c=2", "-n=1", "invalid-url")
+	if err == nil {
+		t.Fatalf("got nil; want err")
+	}
+	if n := tenv.stderr.Len(); n == 0 {  
+        t.Error("stderr = 0 bytes; want >0")
+    }
+}
