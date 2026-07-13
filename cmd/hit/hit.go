@@ -2,8 +2,11 @@ package main
 
 import (
 	"fmt"
+	"go_by_example/hello-go/hit"
+	"io"
+	"math"
 	"os"
-     "io"
+	"time"
 )
 
 const logo = `
@@ -50,4 +53,28 @@ func run(env *env) error {
 
 func runHit(c *config, stdout io.Writer) error {
      return nil
+}
+
+
+func printSummary(sum hit.Summary, stdout io.Writer) {
+    fmt.Fprintf(stdout, `  #1
+Summary:
+    Success:  %.0f%%  #2
+    RPS:      %.1f  #3
+    Requests: %d
+    Errors:   %d
+    Bytes:    %d
+    Duration: %s
+    Fastest:  %s
+    Slowest:  %s
+`,
+        sum.Success,
+        math.Round(sum.RPS),
+        sum.Requests,
+        sum.Errors,
+        sum.Bytes,
+        sum.Duration.Round(time.Millisecond),
+        sum.Fastest.Round(time.Millisecond),
+        sum.Slowest.Round(time.Millisecond),
+    )
 }
