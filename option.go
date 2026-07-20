@@ -1,6 +1,7 @@
 package hit
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"time"
@@ -31,13 +32,15 @@ func withDefaults(o Options) Options {
 	return o  
 }
 
-func SendN(n int, req *http.Request, opts Options) (Results, error){
+func SendN(ctx context.Context,  n int, req *http.Request, opts Options) (Results, error){
 	opts = withDefaults(opts)
-	results:= runPipeline(n, req, opts)
+	ctx, cancel := context.WithCancel(ctx)
+	results:= runPipeline(ctx, n, req, opts)
 	if n<=0 {
 		return nil, fmt.Errorf("n must be positive: got %d\n", n)
 	}
 	return func(yield func(Result) bool) {
+		defer cancel()
 		for result :=range results {
 			if !yield(result) {
 				return

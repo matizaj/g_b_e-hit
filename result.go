@@ -38,7 +38,7 @@ func Summarize(results Results) Summary {
         }
 	}
 	if s.Requests > 0 {
-		s.Success = (float64(s.Success-float64(s.Errors)/float64(s.Requests))*100)
+		s.Success = float64(s.Requests - s.Errors) / float64(s.Requests) * 100
 	}
 
 	s.Duration = time.Since(started)

@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"os"
 	"time"
+     "context"
+     "os/signal"
 )
 
 const logo = `
@@ -53,12 +55,14 @@ func run(env *env) error {
 }
 
 func runHit(c *config, stdout io.Writer) error {
+     ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+     defer stop()
      req, err := http.NewRequest(http.MethodGet, c.url, http.NoBody)
      if err != nil {
           return fmt.Errorf("creating a new request: %w", err)
      }
 
-     results, err := hit.SendN(c.n, req, hit.Options{
+     results, err := hit.SendN(ctx, c.n, req, hit.Options{
           Concurrency: c.c,
           RPS: c.rps,
      })
@@ -66,7 +70,7 @@ func runHit(c *config, stdout io.Writer) error {
           return fmt.Errorf("sending request: %w", err)
      }
      printSummary(hit.Summarize(results), stdout)
-     return nil
+     return ctx.Err()
 }
 
 
