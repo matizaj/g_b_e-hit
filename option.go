@@ -3,6 +3,7 @@ package hit
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"time"
 )
@@ -25,8 +26,17 @@ func withDefaults(o Options) Options {
 	}
 
 	if o.Send == nil {
+		client:= &http.Client{
+			Transport: &http.Transport{
+				MaxIdleConnsPerHost: o.Concurrency,
+			},
+			CheckRedirect: func(_ *http.Request, _ []*http.Request) error {
+				return http.ErrUseLastResponse
+			},
+			Timeout: 30*time.Second,
+		}
 		o.Send = func(r *http.Request) Result {
-			return Send(http.DefaultClient, r) 
+			return Send(client, r) 
 		}
 	}
 	return o  
@@ -50,12 +60,24 @@ func SendN(ctx context.Context,  n int, req *http.Request, opts Options) (Result
 }
 
 
-func Send(_ *http.Client, _ *http.Request) Result {
-	const roundtripTime = 1000 * time.Millisecond
-	time.Sleep(roundtripTime)
-	return Result{
-		Status: http.StatusOK,
-		Bytes: 10,
-		Duration: roundtripTime,
+func Send(client *http.Client, req *http.Request) Result {
+	started := time.Now()
+	var (
+		bytes int64
+		code int
+	)
+
+	resp, err := client.Do(req)
+	if err == nil {
+		defer resp.Body.Close()
+		code = resp.StatusCode
+		bytes, err = io.Copy(io.Discard, resp.Body)
+	}
+
+	return Result {
+		Duration: time.Since(started),
+		Bytes: bytes,
+		Status: code,
+		Error: err,
 	}
 }
