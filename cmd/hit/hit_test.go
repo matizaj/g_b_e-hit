@@ -10,6 +10,7 @@ type testEnv struct {
 	stderr strings.Builder
 }
 
+
 func testRun(args ...string)(*testEnv, error) {
 	var testEnv testEnv
 	err := run(&env{
